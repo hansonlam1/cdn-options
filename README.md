@@ -9,5 +9,11 @@ that writes covered calls or naked puts.
 
 The script accepts parameters to set:
 - the minimum and maximum days to expiry
-- the range of strike prices to evaluate; based on how
-far the strike price is away from the last traded stock price
+- the range of strike prices to evaluate; as a percentage of the last closing price
+- the stock symbol
+
+# To Do
+
+- Need to calculate the date range
+- Need to parse the option chain
+- Need to calculate the annualized return (likely a function called by the dataframe)

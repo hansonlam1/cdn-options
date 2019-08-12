@@ -39,7 +39,7 @@ print(max_price)
 
 # for calls we want strikes from the last price up to the max price
 # for puts we want strikes from the min price up to the last price
+# for the date range within the min max days to expiry
 # page_content.tbody  #tbody contains the option chain
-
 
 
