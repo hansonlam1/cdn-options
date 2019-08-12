@@ -19,5 +19,8 @@ arglist.add_argument("-r", "--strike_range", default = 0.05, help = "Percent str
 parser._action_groups.append(optional)
 args = parser.parse_args()
 
+#get the option quotes for the ticker passed in
+ticker = args.ticker
+
 print(args.ticker)
 
