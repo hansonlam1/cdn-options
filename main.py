@@ -21,17 +21,25 @@ args = parser.parse_args()
 
 #get the option quotes for the ticker passed in
 ticker = args.ticker
+strike_range = args.strike_range
 url = "https://www.m-x.ca/nego_cotes_en.php?symbol=" + ticker + "*"
 page_response = requests.get(url, headers = {"User-Agent":"Mozilla/6.0"},timeout = 5)
-page_content = BeautifulSoup(page_response.content)
+page_content = BeautifulSoup(page_response.content, features = "html.parser")
 
-#we want the list item for the Last price
-quote_info = page_content.find(class_ = "quote-info")   #the quote-info class has the snapshot of the last traded price
-print(quote_info.find("li").find("b").text.strip())     #the last price is in a b tag within the first li tag
-
+# we want the list item for the Last price
 # calculate the range of strike prices we are interested in
+quote_info = page_content.find(class_ = "quote-info")   #the quote-info class has the snapshot of the last traded price
+last_price = float(quote_info.find("li").find("b").text.strip()) #the last price is in a b tag within the first li tag
+min_price = last_price - (last_price * float(strike_range))
+max_price = last_price + (last_price * float(strike_range))
 
-#page_content.tbody  #tbody contains the option chain
+print(last_price)     
+print(min_price)
+print(max_price)
+
+# for calls we want strikes from the last price up to the max price
+# for puts we want strikes from the min price up to the last price
+# page_content.tbody  #tbody contains the option chain
 
 
 
