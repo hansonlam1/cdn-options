@@ -12,6 +12,8 @@ The script accepts parameters to set:
 - the range of strike prices to evaluate; as a percentage of the last closing price
 - the stock symbol
 
+- to run the script in command line: python3 main.py -t tickersymbol
+
 # To Do
 
 - Need to calculate the date range
