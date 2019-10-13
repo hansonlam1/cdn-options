@@ -11,8 +11,6 @@ optional = parser._action_groups.pop()
 arglist = parser.add_argument_group("Arguments")
 arglist.add_argument("-t", "--ticker", default="BNS",
     help="Stock symbol")
-arglist.add_argument("-n", "--min_days", default=10,
-    help="Minimum days to expiry")
 arglist.add_argument("-x", "--max_days", default=120,
     help="Maximum days to expiry")
 arglist.add_argument("-r", "--strike_range", default=0.10,
@@ -37,17 +35,10 @@ last_price = float(quote_info.find("li").find("b").text.strip())
 min_price = last_price - (last_price * float(strike_range))
 max_price = last_price + (last_price * float(strike_range))
 
-print(last_price)
-print(min_price)
-print(max_price)
-print(max_days)
-
 # option chain is the tbody of a table with class='data'
 chainhtml = page_content.find(class_="data").find("tbody").findChildren("tr")
 chain = []
 
-# loop through the rows and put the info into a dataframe
-# each row has 15 columns
 for row in chainhtml:
     expiry = datetime.strptime(row.findAll('td')[0]['data-expiry'], '%Y%m%d').date()
     s_price = float(row.findAll('td')[7].text)
@@ -73,3 +64,5 @@ chain_df = chain_df.drop(chain_df[chain_df.daystoexp > max_days].index)
 print(chain_df)
 
 # calculate the annualized return assuming OOTM put exp or call away
+def annualizedreturn(s_price, bid, ask, daystoexp):
+    # principal is 25% of the strike
