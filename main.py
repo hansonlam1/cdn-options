@@ -1,15 +1,11 @@
-# main part of the program
+import argparse
 from bs4 import BeautifulSoup
+from datetime import datetime, timedelta
+import pandas as pd
 import requests
 import time
-import pandas as pd
-import argparse
-from datetime import datetime, timedelta
 
-maindf = pd.DataFrame()
 
-# instead of a list of tickers we should run this script
-# for a single ticker passed in as an argument to the script
 parser = argparse.ArgumentParser(description="Calculate the annualized return on options")
 optional = parser._action_groups.pop()
 arglist = parser.add_argument_group("Arguments")
@@ -28,11 +24,9 @@ page_response = requests.get(url,
                                 headers={"User-Agent":"Mozilla/6.0"}, timeout=5)
 page_content = BeautifulSoup(page_response.content, features="html.parser")
 
-# we want the list item for the Last price
-# calculate the range of strike prices we are interested in
 # the quote-info class has the snapshot of the last traded price
-quote_info = page_content.find(class_="quote-info")
 # the last price is in a b tag within the first li tag
+quote_info = page_content.find(class_="quote-info")
 last_price = float(quote_info.find("li").find("b").text.strip())
 min_price = last_price - (last_price * float(strike_range))
 max_price = last_price + (last_price * float(strike_range))
@@ -42,10 +36,32 @@ print(min_price)
 print(max_price)
 
 # option chain is the tbody of a table with class='data'
-option_chain = page_content.find(class_="data").find("tbody").findChildren("tr")
-print(option_chain)
+chainhtml = page_content.find(class_="data").find("tbody").findChildren("tr")
+chain = []
 
-# loop through the rows and put the info into a dataframe then apply a function to
+# loop through the rows and put the info into a dataframe
+# each row has 15 columns
+for row in chainhtml:
+    expiry = row.findAll('td')[0]['data-expiry']
+    s_price = float(row.findAll('td')[7].text)
+    c_bid = float(row.findAll('td')[1].text)
+    c_ask = float(row.findAll('td')[2].text)
+    c_last = float(row.findAll('td')[3].text)
+    p_bid = float(row.findAll('td')[9].text)
+    p_ask = float(row.findAll('td')[10].text)
+    p_last = float(row.findAll('td')[11].text)
+    option = [expiry, s_price, c_bid, c_ask, c_last, p_bid, p_ask, p_last]
+    chain.append(option)
+
+#print(chain)
+
+chain_df = pd.DataFrame(chain)
+chain_df.columns = ['expiry', 's_price',
+                    'c_bid', 'c_ask', 'c_last',
+                    'p_bid', 'p_ask', 'p_last']
+
 # strip out rows outside the price range or date range
-
+chain_df = chain_df.drop(chain_df[chain_df.s_price < min_price].index)
+chain_df = chain_df.drop(chain_df[chain_df.s_price > max_price].index)
+print(chain_df)
 # calculate the annualized return assuming OOTM put exp or call away
