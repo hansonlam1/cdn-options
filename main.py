@@ -18,6 +18,16 @@ arglist.add_argument("-r", "--strike_range", default=0.10,
 parser._action_groups.append(optional)
 args = parser.parse_args()
 
+
+# calculate the annualized return assuming OOTM put exp or call away
+def annualizereturn(s_price, bid, ask, daystoexp):
+    p = s_price * 0.25
+    prem = (bid + ask) / 2
+    basereturn = prem/p
+    annualreturn = (1+basereturn)**(365/daystoexp)-1
+    return annualreturn
+
+
 # get the option quotes for the ticker passed in
 ticker = args.ticker
 strike_range = args.strike_range
@@ -41,15 +51,16 @@ chain = []
 
 for row in chainhtml:
     expiry = datetime.strptime(row.findAll('td')[0]['data-expiry'], '%Y%m%d').date()
-    s_price = float(row.findAll('td')[7].text)
-    c_bid = float(row.findAll('td')[1].text)
-    c_ask = float(row.findAll('td')[2].text)
+    strike = float(row.findAll('td')[7].text)
+    call_bid = float(row.findAll('td')[1].text)
+    call_ask = float(row.findAll('td')[2].text)
     c_last = float(row.findAll('td')[3].text)
-    p_bid = float(row.findAll('td')[9].text)
-    p_ask = float(row.findAll('td')[10].text)
-    p_last = float(row.findAll('td')[11].text)
+    put_bid = float(row.findAll('td')[9].text)
+    put_ask = float(row.findAll('td')[10].text)
+    put_last = float(row.findAll('td')[11].text)
     daystoexp = (expiry - today).days
-    option = [expiry, s_price, c_bid, c_ask, c_last, p_bid, p_ask, p_last, daystoexp]
+    option = [expiry, strike, call_bid, call_ask, c_last,
+        put_bid, put_ask, put_last, daystoexp]
     chain.append(option)
 
 chain_df = pd.DataFrame(chain)
@@ -61,8 +72,6 @@ chain_df.columns = ['expiry', 'strike',
 chain_df = chain_df.drop(chain_df[chain_df.strike < min_price].index)
 chain_df = chain_df.drop(chain_df[chain_df.strike > max_price].index)
 chain_df = chain_df.drop(chain_df[chain_df.daystoexp > max_days].index)
+chain_df['annualreturn'] = chain_df.apply(lambda x: annualizereturn(x['strike'],
+    x['put_bid'], x['put_ask'], x['daystoexp']), axis=1)
 print(chain_df)
-
-# calculate the annualized return assuming OOTM put exp or call away
-def annualizedreturn(s_price, bid, ask, daystoexp):
-    # principal is 25% of the strike
