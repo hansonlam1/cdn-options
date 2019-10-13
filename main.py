@@ -19,12 +19,13 @@ parser._action_groups.append(optional)
 args = parser.parse_args()
 
 
-# calculate the annualized return assuming OOTM put exp or call away
+# calculate the annualized return assuming OOTM put exp
 def annualizereturn(s_price, bid, ask, daystoexp):
-    p = s_price * 0.25
-    prem = (bid + ask) / 2
-    basereturn = prem/p
-    annualreturn = (1+basereturn)**(365/daystoexp)-1
+    p = round(s_price * 0.25, 2)
+    prem = round(((bid + ask) / 2), 2)
+    basereturn = round(prem/p, 6)
+    annualreturn = round(((1+basereturn)**(365/daystoexp)-1)*100, 2)
+    #print(s_price, p, prem, daystoexp, basereturn, annualreturn)
     return annualreturn
 
 
@@ -70,8 +71,11 @@ chain_df.columns = ['expiry', 'strike',
 
 # strip out rows outside the price range or date range
 chain_df = chain_df.drop(chain_df[chain_df.strike < min_price].index)
-chain_df = chain_df.drop(chain_df[chain_df.strike > max_price].index)
+chain_df = chain_df.drop(chain_df[chain_df.strike > last_price].index)
 chain_df = chain_df.drop(chain_df[chain_df.daystoexp > max_days].index)
+chain_df['estimatedprem'] = chain_df.apply(lambda x: (x['put_bid']+x['put_ask'])/2, axis=1)
 chain_df['annualreturn'] = chain_df.apply(lambda x: annualizereturn(x['strike'],
     x['put_bid'], x['put_ask'], x['daystoexp']), axis=1)
+dropcols = ['call_bid', 'call_ask', 'call_last', 'put_last']
+chain_df = chain_df.drop(columns=dropcols, axis=1)
 print(chain_df)
