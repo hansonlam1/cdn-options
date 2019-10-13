@@ -78,4 +78,5 @@ chain_df['annualreturn'] = chain_df.apply(lambda x: annualizereturn(x['strike'],
     x['put_bid'], x['put_ask'], x['daystoexp']), axis=1)
 dropcols = ['call_bid', 'call_ask', 'call_last', 'put_last']
 chain_df = chain_df.drop(columns=dropcols, axis=1)
+chain_df.to_csv(ticker + "-" + today.strftime('%Y-%b-%d') + ".csv")
 print(chain_df)
