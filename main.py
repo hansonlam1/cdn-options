@@ -76,6 +76,7 @@ chain_df.columns = ['expiry', 'strike',
 chain_df = chain_df.drop(chain_df[chain_df.strike < min_price].index)
 chain_df = chain_df.drop(chain_df[chain_df.strike > last_price].index)
 chain_df = chain_df.drop(chain_df[chain_df.daystoexp > max_days].index)
+chain_df = chain_df.drop(chain_df[chain_df.daystoexp == 0].index)
 chain_df['estimatedprem'] = chain_df.apply(lambda x: (x['put_bid']+x['put_ask'])/2, axis=1)
 chain_df['annualreturn'] = chain_df.apply(lambda x: annualizereturn(x['strike'],
     x['put_bid'], x['put_ask'], x['daystoexp']), axis=1)
