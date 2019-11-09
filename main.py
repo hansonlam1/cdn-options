@@ -16,7 +16,7 @@ arglist.add_argument("-x", "--max_days", default=120,
 arglist.add_argument("-r", "--strike_range", default=0.15,
     help="Percent strike price range")
 arglist.add_argument("-o", "--output_to", default='p',
-    help="Output to html or print")
+    help="Output to html, csv or print")
 parser._action_groups.append(optional)
 args = parser.parse_args()
 
